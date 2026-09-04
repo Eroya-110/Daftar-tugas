@@ -2,6 +2,20 @@ let tasks = [];
 let currentFilter = 'all';
 let nextId = 1;
 
+function saveTasks() {
+  localStorage.setItem('manajer_tugas_data', JSON.stringify(tasks));
+}
+
+function loadTasks() {
+  const saved = localStorage.getItem('manajer_tugas_data');
+  if (saved) {
+    tasks = JSON.parse(saved);
+    // cari ID tertinggi supaya nextId tidak bentrok
+    const maxId = tasks.reduce((max, t) => Math.max(max, t.id), 0);
+    nextId = maxId + 1;
+  }
+}
+
 function addTask() {
   const name = document.getElementById('taskName').value.trim();
   const detail = document.getElementById('taskDetail').value.trim();
@@ -18,12 +32,14 @@ function addTask() {
     detail: detail,
     deadline: deadline,
     completed: false,
-    createdAt: new Date()
+    createdAt: new Date().toISOString()
   });
 
   document.getElementById('taskName').value = '';
   document.getElementById('taskDetail').value = '';
   document.getElementById('taskDeadline').value = '';
+
+  saveTasks();
   renderTasks();
 }
 
@@ -31,12 +47,14 @@ function toggleTask(id) {
   const task = tasks.find(t => t.id === id);
   if (task) {
     task.completed = !task.completed;
+    saveTasks();
     renderTasks();
   }
 }
 
 function deleteTask(id) {
   tasks = tasks.filter(t => t.id !== id);
+  saveTasks();
   renderTasks();
 }
 
@@ -103,4 +121,5 @@ function renderTasks() {
   }).join('');
 }
 
+loadTasks();
 renderTasks();
